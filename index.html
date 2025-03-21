@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puzzle Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+            background: linear-gradient(to bottom, #e6f2ff, #c6e2ff);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #2563eb;
+            text-align: center;
+            z-index: 1;
+        }
+        
+        p {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #4b5563;
+            z-index: 1;
+        }
+        
+        .puzzle-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            aspect-ratio: 3/4;
+            margin-bottom: 1.5rem;
+            z-index: 1;
+        }
+        
+        .puzzle-board {
+            position: absolute;
+            inset: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .puzzle-piece {
+            position: absolute;
+            width: 33.33%;
+            height: 25%;
+            transition: all 0.3s;
+            cursor: move;
+        }
+        
+        .puzzle-piece-inner {
+            width: 100%;
+            height: 100%;
+            background-size: 300% 400%;
+            border: 2px solid #d1d5db;
+            transition: all 0.3s;
+        }
+        
+        .puzzle-piece.locked .puzzle-piece-inner {
+            border-color: #22c55e;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transform: scale(0.98);
+        }
+        
+        .puzzle-piece.dragging {
+            opacity: 0.5;
+            z-index: 10;
+        }
+        
+        .puzzle-piece.locked {
+            z-index: 5;
+        }
+        
+        .puzzle-piece.complete .puzzle-piece-inner {
+            border-color: #facc15;
+        }
+        
+        .success-message {
+            text-align: center;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
+            background-color: #dcfce7;
+            color: #166534;
+            border-radius: 8px;
+            animation: bounce 1s infinite;
+            display: none;
+            z-index: 1;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 1rem;
+            z-index: 1;
+        }
+        
+        button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .shuffle-btn {
+            background-color: white;
+            color: #4b5563;
+            border: 1px solid #d1d5db;
+        }
+        
+        .shuffle-btn:hover {
+            background-color: #f9fafb;
+        }
+        
+        .reset-btn {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+        }
+        
+        .reset-btn:hover {
+            background-color: #1d4ed8;
+        }
+        
+        /* Falling flowers */
+        .flower {
+            position: absolute;
+            font-size: 2rem;
+            pointer-events: none;
+            top: -50px;
+        }
+        
+        @keyframes fall {
+            0% {
+                transform: translateY(-50px) rotate(0deg);
+                opacity: 1;
+            }
+            85% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes celebrate {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .puzzle-container {
+                max-width: 300px;
+            }
+        }
+
+        .message {
+            font-weight: bold;
+            color: #2563eb;
+            margin-bottom: 1rem;
+            text-align: center;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Puzzle Game</h1>
+    <p class="message">Para mi amigue, y te chingas porque soy programador jsj</p>
+    <p>Drag and drop the pieces to complete the puzzle!</p>
+    
+    <div class="puzzle-container">
+        <div class="puzzle-board" id="puzzle-board"></div>
+    </div>
+    
+    <div class="success-message" id="success-message">
+        🎉 Congratulations! You completed the puzzle! 🎉
+    </div>
+    
+    <div class="buttons">
+        <button class="shuffle-btn" onclick="shufflePuzzle()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 3 21 3 21 8"></polyline>
+                <line x1="4" y1="20" x2="21" y2="3"></line>
+                <polyline points="21 16 21 21 16 21"></polyline>
+                <line x1="15" y1="15" x2="21" y2="21"></line>
+                <line x1="4" y1="4" x2="9" y2="9"></line>
+            </svg>
+            Shuffle
+        </button>
+        <button class="reset-btn" onclick="initializePuzzle()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 2v6h-6"></path>
+                <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                <path d="M3 22v-6h6"></path>
+                <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+            </svg>
+            Reset
+        </button>
+    </div>
+    
+    <script>
+        // Puzzle game logic
+        const puzzleBoard = document.getElementById('puzzle-board');
+        const successMessage = document.getElementById('success-message');
+        let pieces = [];
+        let draggedPiece = null;
+        let draggedIndex = null;
+        
+        // Initialize the puzzle
+        function initializePuzzle() {
+            // Clear the board
+            puzzleBoard.innerHTML = '';
+            successMessage.style.display = 'none';
+            
+            // Create pieces array - now with 12 pieces to fill the 3x4 grid
+            pieces = Array.from({ length: 12 }, (_, i) => ({
+                id: i,
+                currentPosition: i,
+                correctPosition: i,
+                isLocked: false
+            }));
+            
+            // Shuffle the pieces
+            shufflePieces();
+            
+            // Render the pieces
+            renderPieces();
+            
+            // Create falling flowers
+            createFallingFlowers();
+        }
+        
+        // Shuffle the pieces
+        function shufflePuzzle() {
+            if (pieces.every(piece => piece.isLocked)) {
+                // Reset if all pieces are locked
+                initializePuzzle();
+                return;
+            }
+            
+            // Unlock all pieces
+            pieces.forEach(piece => {
+                piece.isLocked = false;
+            });
+            
+            // Shuffle
+            shufflePieces();
+            
+            // Re-render
+            renderPieces();
+            
+            // Hide success message
+            successMessage.style.display = 'none';
+        }
+        
+        // Shuffle the pieces array
+        function shufflePieces() {
+            // Fisher-Yates shuffle algorithm
+            for (let i = pieces.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pieces[i].currentPosition, pieces[j].currentPosition] = 
+                [pieces[j].currentPosition, pieces[i].currentPosition];
+            }
+        }
+        
+        // Render the pieces on the board
+        function renderPieces() {
+            puzzleBoard.innerHTML = '';
+            
+            pieces.forEach((piece, index) => {
+                const pieceElement = document.createElement('div');
+                pieceElement.className = `puzzle-piece ${piece.isLocked ? 'locked' : ''}`;
+                pieceElement.setAttribute('data-index', index);
+                
+                // Position the piece
+                const position = getPiecePosition(piece.currentPosition);
+                pieceElement.style.top = position.top;
+                pieceElement.style.left = position.left;
+                
+                // Create inner element for styling
+                const innerElement = document.createElement('div');
+                innerElement.className = 'puzzle-piece-inner';
+                
+                // Set background image and position
+                innerElement.style.backgroundImage = "url('image_fx_.jpg')";
+                const bgPosition = getBackgroundPosition(piece.id);
+                innerElement.style.backgroundPosition = bgPosition;
+                
+                pieceElement.appendChild(innerElement);
+                puzzleBoard.appendChild(pieceElement);
+                
+                // Add drag events if not locked
+                if (!piece.isLocked) {
+                    pieceElement.setAttribute('draggable', 'true');
+                    pieceElement.addEventListener('dragstart', handleDragStart);
+                    pieceElement.addEventListener('dragend', handleDragEnd);
+                }
+                
+                // Add drop events to all pieces
+                pieceElement.addEventListener('dragover', handleDragOver);
+                pieceElement.addEventListener('dragenter', handleDragEnter);
+                pieceElement.addEventListener('drop', handleDrop);
+            });
+            
+            // Check if puzzle is complete
+            checkCompletion();
+        }
+        
+        // Calculate position for a piece
+        function getPiecePosition(position) {
+            const rows = 4;
+            const cols = 3; // 3 columns for 12 pieces (3x4 grid)
+            const row = Math.floor(position / cols);
+            const col = position % cols;
+            
+            return {
+                top: `${row * 25}%`,
+                left: `${col * 33.33}%`
+            };
+        }
+        
+        // Calculate background position for image slice
+        function getBackgroundPosition(id) {
+            const rows = 4;
+            const cols = 3; // 3 columns for 12 pieces (3x4 grid)
+            const row = Math.floor(id / cols);
+            const col = id % cols;
+            
+            return `${-col * 100}% ${-row * 100}%`;
+        }
+        
+        // Drag and drop handlers
+        function handleDragStart(e) {
+            draggedIndex = parseInt(this.getAttribute('data-index'));
+            draggedPiece = this;
+            
+            // Add dragging class after a small delay
+            setTimeout(() => {
+                this.classList.add('dragging');
+            }, 0);
+            
+            // Set data transfer
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', draggedIndex);
+        }
+        
+        function handleDragEnd() {
+            this.classList.remove('dragging');
+            draggedPiece = null;
+            draggedIndex = null;
+        }
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+            return false;
+        }
+        
+        function handleDragEnter(e) {
+            e.preventDefault();
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            
+            if (draggedIndex === null) return;
+            
+            const targetIndex = parseInt(this.getAttribute('data-index'));
+            
+            // Don't allow dropping on locked pieces
+            if (pieces[targetIndex].isLocked) return;
+            
+            if (draggedIndex !== targetIndex) {
+                // Swap positions
+                const draggedPosition = pieces[draggedIndex].currentPosition;
+                pieces[draggedIndex].currentPosition = pieces[targetIndex].currentPosition;
+                pieces[targetIndex].currentPosition = draggedPosition;
+                
+                // Check if any piece is now in the correct position
+                pieces.forEach(piece => {
+                    if (piece.currentPosition === piece.correctPosition && !piece.isLocked) {
+                        piece.isLocked = true;
+                    }
+                });
+                
+                // Re-render the pieces
+                renderPieces();
+            }
+            
+            return false;
+        }
+        
+        // Check if the puzzle is complete
+        function checkCompletion() {
+            if (pieces.every(piece => piece.isLocked)) {
+                // All pieces are in the correct position
+                successMessage.style.display = 'block';
+                
+                // Add complete class to all pieces for celebration animation
+                document.querySelectorAll('.puzzle-piece').forEach(piece => {
+                    piece.classList.add('complete');
+                    piece.style.animation = 'celebrate 1s ease-in-out';
+                });
+            }
+        }
+        
+        // Create falling flowers
+        function createFallingFlowers() {
+            // Remove existing flowers
+            document.querySelectorAll('.flower').forEach(flower => {
+                flower.remove();
+            });
+            
+            // Create new flowers
+            for (let i = 0; i < 20; i++) {
+                const flower = document.createElement('div');
+                flower.className = 'flower';
+                flower.textContent = '🌼';
+                flower.style.left = `${Math.random() * 100}%`;
+                
+                // Random animation duration and delay
+                const duration = 5 + Math.random() * 10;
+                const delay = Math.random() * 5;
+                flower.style.animation = `fall ${duration}s linear ${delay}s infinite`;
+                
+                // Random rotation
+                flower.style.transform = `rotate(${Math.random() * 360}deg)`;
+                
+                document.body.appendChild(flower);
+            }
+        }
+        
+        // Initialize the puzzle when the page loads
+        window.onload = initializePuzzle;
+    </script>
+</body>
+</html>
