@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puzzle Game</title>
+    <link rel="shortcut icon" href="/image_fx_ (3).jpg" type="image/x-icon">
+    <title>Vales vrga</title>
     <style>
         * {
             margin: 0;
@@ -201,16 +202,16 @@
     </style>
 </head>
 <body>
-    <h1>Puzzle Game</h1>
-    <p class="message">Para mi amigue, y te chingas porque soy programador jsj</p>
-    <p>Drag and drop the pieces to complete the puzzle!</p>
+    <h1>Rompecabezas</h1>
+    <p class="message">Para mi amigue <3 y te chingas porque soy programador jsj</p>
+    <p>Arrastra las piezas no seas wey</p>
     
     <div class="puzzle-container">
         <div class="puzzle-board" id="puzzle-board"></div>
     </div>
     
     <div class="success-message" id="success-message">
-        🎉 Congratulations! You completed the puzzle! 🎉
+        🎉 Ya pa que no llores! 🎉
     </div>
     
     <div class="buttons">
@@ -222,7 +223,7 @@
                 <line x1="15" y1="15" x2="21" y2="21"></line>
                 <line x1="4" y1="4" x2="9" y2="9"></line>
             </svg>
-            Shuffle
+            XD
         </button>
         <button class="reset-btn" onclick="initializePuzzle()">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -231,25 +232,24 @@
                 <path d="M3 22v-6h6"></path>
                 <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
             </svg>
-            Reset
+            Reiniciar
         </button>
     </div>
     
     <script>
-        // Puzzle game logic
+
         const puzzleBoard = document.getElementById('puzzle-board');
         const successMessage = document.getElementById('success-message');
         let pieces = [];
         let draggedPiece = null;
         let draggedIndex = null;
         
-        // Initialize the puzzle
+    
         function initializePuzzle() {
-            // Clear the board
+  
             puzzleBoard.innerHTML = '';
             successMessage.style.display = 'none';
-            
-            // Create pieces array - now with 12 pieces to fill the 3x4 grid
+     
             pieces = Array.from({ length: 12 }, (_, i) => ({
                 id: i,
                 currentPosition: i,
@@ -257,42 +257,39 @@
                 isLocked: false
             }));
             
-            // Shuffle the pieces
             shufflePieces();
             
             // Render the pieces
             renderPieces();
             
-            // Create falling flowers
+    
             createFallingFlowers();
         }
         
-        // Shuffle the pieces
         function shufflePuzzle() {
             if (pieces.every(piece => piece.isLocked)) {
-                // Reset if all pieces are locked
+    
                 initializePuzzle();
                 return;
             }
             
-            // Unlock all pieces
+    
             pieces.forEach(piece => {
                 piece.isLocked = false;
             });
             
-            // Shuffle
+
             shufflePieces();
             
-            // Re-render
+  
             renderPieces();
             
-            // Hide success message
+     
             successMessage.style.display = 'none';
         }
         
-        // Shuffle the pieces array
         function shufflePieces() {
-            // Fisher-Yates shuffle algorithm
+    
             for (let i = pieces.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [pieces[i].currentPosition, pieces[j].currentPosition] = 
@@ -300,7 +297,6 @@
             }
         }
         
-        // Render the pieces on the board
         function renderPieces() {
             puzzleBoard.innerHTML = '';
             
@@ -319,7 +315,7 @@
                 innerElement.className = 'puzzle-piece-inner';
                 
                 // Set background image and position
-                innerElement.style.backgroundImage = "url('image_fx_.jpg')";
+                innerElement.style.backgroundImage = "url('image_fx_ (3).jpg')";
                 const bgPosition = getBackgroundPosition(piece.id);
                 innerElement.style.backgroundPosition = bgPosition;
                 
